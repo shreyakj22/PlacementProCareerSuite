@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Alumni Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="bg-gray-100 flex">
+
+<div class="w-64 bg-indigo-700 text-white min-h-screen p-6">
+  <h2 class="text-xl font-bold mb-6">Alumni Panel</h2>
+  <ul class="space-y-4">
+    <li>Post Job</li>
+    <li>Mentorship</li>
+  </ul>
+</div>
+
+<div class="flex-1 p-8">
+  <h1 class="text-2xl font-bold text-indigo-600">Post Job</h1>
+
+  <div class="bg-white p-6 rounded-xl shadow mt-6">
+    <input id="jobCompany" class="w-full p-2 border rounded mb-2" placeholder="Company">
+    <input id="jobRole" class="w-full p-2 border rounded mb-2" placeholder="Role">
+    <textarea id="jobDesc" class="w-full p-2 border rounded mb-2" placeholder="Description"></textarea>
+    <button id="postJobBtn" class="bg-indigo-600 text-white px-4 py-2 rounded">
+      Post Job
+    </button>
+  </div>
+  
+  <div class="bg-white p-6 rounded-xl shadow mt-6">
+    <h2 class="text-lg font-semibold mb-2">Mentorship Slots</h2>
+    <input id="slotDate" type="date" class="p-2 border rounded mb-2">
+    <input id="slotTime" type="time" class="p-2 border rounded mb-2">
+    <button id="addSlotBtn" class="bg-indigo-600 text-white px-4 py-2 rounded">Add Slot</button>
+    <div id="slotsList" class="mt-3 space-y-2"></div>
+  </div>
+</div>
+
+<script src="js/alumni.js"></script>
+<script src="js/chatbot.js"></script>
+</body>
+</html>

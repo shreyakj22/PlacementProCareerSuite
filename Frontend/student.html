@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Student Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="bg-gray-100 flex">
+
+<div class="w-64 bg-indigo-700 text-white min-h-screen p-6">
+  <h2 class="text-xl font-bold mb-6">Student Panel</h2>
+  <ul class="space-y-4">
+    <li>Profile</li>
+    <li>Resume Builder</li>
+    <li>Applications</li>
+  </ul>
+</div>
+
+<div class="flex-1 p-8">
+  <h1 class="text-2xl font-bold text-indigo-600">Profile</h1>
+
+  <div class="bg-white p-6 rounded-xl shadow mt-6">
+    <input id="stuName" class="w-full p-2 border rounded mb-2" placeholder="Name">
+    <input id="stuBranch" class="w-full p-2 border rounded mb-2" placeholder="Branch">
+    <input id="stuCgpa" type="number" step="0.01" class="w-full p-2 border rounded mb-2" placeholder="CGPA">
+    <input id="stuEmail" class="w-full p-2 border rounded mb-2" placeholder="Email">
+    <input id="stuPhone" class="w-full p-2 border rounded mb-2" placeholder="Phone">
+    <button id="saveProfile" class="bg-indigo-600 text-white px-4 py-2 rounded">
+      Save
+    </button>
+  </div>
+</div>
+</div>
+
+<div class="p-8">
+  <h2 class="text-xl font-semibold">Resume Wizard</h2>
+  <div class="bg-white p-6 rounded shadow mt-4">
+    <input id="resName" class="w-full p-2 border rounded mb-2" placeholder="Full Name">
+    <input id="resEmail" class="w-full p-2 border rounded mb-2" placeholder="Email">
+    <input id="resPhone" class="w-full p-2 border rounded mb-2" placeholder="Phone">
+    <textarea id="resProjects" class="w-full p-2 border rounded mb-2" placeholder="Projects (one per line)"></textarea>
+    <input id="resSkills" class="w-full p-2 border rounded mb-2" placeholder="Skills (comma separated)">
+    <button id="generatePdf" class="bg-indigo-600 text-white px-4 py-2 rounded">Generate PDF Resume</button>
+  </div>
+
+  <h2 class="text-xl font-semibold mt-6">Live Feed (Drives you're eligible for)</h2>
+  <div id="liveFeed" class="bg-white p-4 rounded shadow mt-2 max-h-60 overflow-auto"></div>
+
+  <h2 class="text-xl font-semibold mt-6">Application Tracker</h2>
+  <div id="tracker" class="bg-white p-4 rounded shadow mt-2"></div>
+
+  <h2 class="text-xl font-semibold mt-6">Alumni Job Board</h2>
+  <div id="jobBoard" class="bg-white p-4 rounded shadow mt-2 max-h-48 overflow-auto"></div>
+
+  <h2 class="text-xl font-semibold mt-6">Mentorship Slots (Book with alumni)</h2>
+  <div id="mentorshipSlots" class="bg-white p-4 rounded shadow mt-2 max-h-48 overflow-auto"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="js/student.js"></script>
+<script src="js/chatbot.js"></script>
+</body>
+</html>

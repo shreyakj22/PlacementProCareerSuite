@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PlacementPro – Role-Based Placement Management System</title>
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- External CSS -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body class="bg-gray-50 text-gray-800 font-[Poppins]">
+
+<!-- ================= NAVBAR ================= -->
+
+<nav class="bg-white shadow-md fixed w-full z-50">
+  <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
+    <h1 class="text-2xl font-bold text-indigo-600">PlacementPro</h1>
+
+    <div class="hidden md:flex space-x-8 font-medium items-center">
+      <a href="#overview" class="hover:text-indigo-600">Overview</a>
+      <a href="#features" class="hover:text-indigo-600">Features</a>
+      <a href="#analytics" class="hover:text-indigo-600">Analytics</a>
+
+      <!-- Login removed from navbar; role cards link to role-specific login -->
+    </div>
+  </div>
+</nav>
+
+<!-- ================= HERO SECTION ================= -->
+
+<section id="overview"
+  class="pt-32 pb-20 bg-gradient-to-r from-indigo-600 to-purple-600 text-white">
+  <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
+
+    <!-- Left Text -->
+    <div>
+      <h2 class="text-4xl md:text-5xl font-bold leading-tight">
+        A Smart Career Intelligence Platform
+      </h2>
+
+      <p class="mt-6 text-lg opacity-90">
+        Automating placement drives, resume building, analytics insights,
+        alumni networking and career guidance — all in one unified platform.
+      </p>
+
+      <a href="login.html"
+         class="mt-8 inline-block px-6 py-3 bg-white text-indigo-600 font-semibold rounded-lg shadow-lg hover:bg-gray-200 transition">
+        Get Started
+      </a>
+    </div>
+
+    <!-- Role Cards -->
+    <div class="grid grid-cols-2 gap-6">
+
+      <a href="login.html?role=student" class="block bg-white/20 backdrop-blur-lg p-6 rounded-xl shadow-lg hover:scale-105 transition no-underline text-current">
+        <h3 class="text-xl font-semibold">🎓 Student</h3>
+        <p class="mt-2 text-sm opacity-80">Profile, Resume, Applications</p>
+      </a>
+
+      <!-- Removed Recruiter (not in problem statement) -->
+
+      <a href="login.html?role=tpo" class="block bg-white/20 backdrop-blur-lg p-6 rounded-xl shadow-lg hover:scale-105 transition no-underline text-current">
+        <h3 class="text-xl font-semibold">👨‍💼 TPO</h3>
+        <p class="mt-2 text-sm opacity-80">Create Drives & Manage Placements</p>
+      </a>
+
+      <a href="login.html?role=alumni" class="block bg-white/20 backdrop-blur-lg p-6 rounded-xl shadow-lg hover:scale-105 transition no-underline text-current">
+        <h3 class="text-xl font-semibold">🤝 Alumni</h3>
+        <p class="mt-2 text-sm opacity-80">Referrals & Mentorship</p>
+      </a>
+
+      <div class="bg-white/20 backdrop-blur-lg p-6 rounded-xl shadow-lg hover:scale-105 transition">
+        <h3 class="text-xl font-semibold">🤖 PlacementBot</h3>
+        <p class="mt-2 text-sm opacity-80">24/7 Virtual Career Assistant</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ================= FEATURES SECTION ================= -->
+
+<section id="features" class="py-20 bg-gray-100">
+  <div class="max-w-7xl mx-auto px-6 text-center">
+
+    <h2 class="text-3xl font-bold text-indigo-600">Core Features</h2>
+    <p class="mt-4 text-gray-600">
+      Everything needed for a complete placement ecosystem
+    </p>
+
+    <div class="mt-12 grid md:grid-cols-4 gap-10">
+
+      <div class="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition">
+        <h3 class="text-xl font-semibold">⚙ Criteria Engine</h3>
+        <p class="mt-3 text-gray-600">
+          Instantly filter eligible students based on CGPA, branch and backlogs.
+        </p>
+      </div>
+
+      <div class="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition">
+        <h3 class="text-xl font-semibold">📄 Resume Wizard</h3>
+        <p class="mt-3 text-gray-600">
+          Generate standardized, college-branded resumes instantly.
+        </p>
+      </div>
+
+      <div class="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition">
+        <h3 class="text-xl font-semibold">📊 Skill Gap Analysis</h3>
+        <p class="mt-3 text-gray-600">
+          Compare student skills with market demand and suggest improvements.
+        </p>
+      </div>
+
+      <div class="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition">
+        <h3 class="text-xl font-semibold">🤖 PlacementBot</h3>
+        <p class="mt-3 text-gray-600">
+          AI-based assistant answering placement queries instantly.
+        </p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ================= ANALYTICS SECTION ================= -->
+
+<section id="analytics" class="py-20 bg-white">
+  <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
+
+    <div>
+      <h2 class="text-3xl font-bold text-indigo-600">
+        Data-Driven Placement Insights
+      </h2>
+
+      <p class="mt-6 text-gray-600">
+        Track branch-wise placements, average packages, top recruiters
+        and performance analytics in real time.
+      </p>
+
+      <a href="login.html"
+         class="mt-8 inline-block px-6 py-3 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 transition">
+        View Dashboard
+      </a>
+    </div>
+
+    <div class="bg-gradient-to-r from-indigo-500 to-purple-500 p-10 rounded-xl shadow-lg text-white text-center">
+      <h3 class="text-2xl font-bold">98% Placement Rate</h3>
+      <p class="mt-4 opacity-90">150+ Companies Visited</p>
+      <p class="mt-2 opacity-90">₹24 LPA Average CTC</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+
+<footer class="bg-indigo-900 text-white py-10">
+  <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-8">
+
+    <div>
+      <h3 class="text-xl font-bold">PlacementPro</h3>
+      <p class="mt-4 text-sm opacity-80">
+        MCA Major Project – Role-Based Placement Management System.
+      </p>
+    </div>
+
+    <div>
+      <h3 class="text-lg font-semibold">Quick Links</h3>
+      <ul class="mt-4 space-y-2 text-sm opacity-80">
+        <li>Overview</li>
+        <li>Features</li>
+        <li>Analytics</li>
+      </ul>
+    </div>
+
+    <div>
+      <h3 class="text-lg font-semibold">Contact</h3>
+      <p class="mt-4 text-sm opacity-80">
+        placement@college.edu<br>
+        +91 98765 43210
+      </p>
+    </div>
+
+  </div>
+
+  <div class="text-center mt-10 text-sm opacity-70">
+    © 2026 PlacementPro. All rights reserved.
+  </div>
+</footer>
+
+<!-- External JS -->
+<script src="js/chatbot.js"></script>
+
+</body>
+</html>
