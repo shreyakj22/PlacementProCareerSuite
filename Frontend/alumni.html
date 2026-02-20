@@ -1,42 +1,103 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Alumni Dashboard</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alumni Dashboard - PlacementPro</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Poppins', sans-serif; }
+  .sidebar-link { cursor: pointer; padding: 8px 12px; border-radius: 8px; transition: background 0.2s; }
+  .sidebar-link:hover, .sidebar-link.active { background: rgba(255,255,255,0.15); }
+  .section-card { background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 24px; }
+</style>
 </head>
 
-<body class="bg-gray-100 flex">
+<body class="bg-gray-50 min-h-screen flex">
 
-<div class="w-64 bg-indigo-700 text-white min-h-screen p-6">
-  <h2 class="text-xl font-bold mb-6">Alumni Panel</h2>
-  <ul class="space-y-4">
-    <li>Post Job</li>
-    <li>Mentorship</li>
-  </ul>
-</div>
-
-<div class="flex-1 p-8">
-  <h1 class="text-2xl font-bold text-indigo-600">Post Job</h1>
-
-  <div class="bg-white p-6 rounded-xl shadow mt-6">
-    <input id="jobCompany" class="w-full p-2 border rounded mb-2" placeholder="Company">
-    <input id="jobRole" class="w-full p-2 border rounded mb-2" placeholder="Role">
-    <textarea id="jobDesc" class="w-full p-2 border rounded mb-2" placeholder="Description"></textarea>
-    <button id="postJobBtn" class="bg-indigo-600 text-white px-4 py-2 rounded">
-      Post Job
-    </button>
+<!-- Sidebar -->
+<aside class="w-64 bg-gradient-to-b from-indigo-700 to-indigo-900 text-white min-h-screen p-6 flex flex-col justify-between fixed left-0 top-0">
+  <div>
+    <h2 class="text-xl font-bold mb-1">🤝 Alumni Panel</h2>
+    <p id="welcomeUser" class="text-sm opacity-70 mb-8"></p>
+    <nav>
+      <ul class="space-y-2">
+        <li class="sidebar-link active" onclick="showSection('postjob')">💼 Post Job Referral</li>
+        <li class="sidebar-link" onclick="showSection('mentorship')">📅 Mentorship Slots</li>
+        <li class="sidebar-link" onclick="showSection('myjobs')">📋 My Posted Jobs</li>
+      </ul>
+    </nav>
   </div>
-  
-  <div class="bg-white p-6 rounded-xl shadow mt-6">
-    <h2 class="text-lg font-semibold mb-2">Mentorship Slots</h2>
-    <input id="slotDate" type="date" class="p-2 border rounded mb-2">
-    <input id="slotTime" type="time" class="p-2 border rounded mb-2">
-    <button id="addSlotBtn" class="bg-indigo-600 text-white px-4 py-2 rounded">Add Slot</button>
-    <div id="slotsList" class="mt-3 space-y-2"></div>
-  </div>
-</div>
+  <button onclick="logout()" class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg font-medium transition">
+    ← Logout
+  </button>
+</aside>
 
+<!-- Main Content -->
+<main class="flex-1 ml-64 p-8">
+
+  <!-- Post Job Section -->
+  <div id="sec-postjob" class="dashboard-section">
+    <h1 class="text-2xl font-bold text-indigo-600 mb-6">💼 Post Job Referral</h1>
+    <div class="section-card">
+      <p class="text-gray-500 text-sm mb-4">Post job openings from your company. These will be visible to students on their Job Board.</p>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Company</label>
+          <input id="jobCompany" class="w-full p-3 border border-gray-200 rounded-lg outline-none" placeholder="e.g. Google">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Role</label>
+          <input id="jobRole" class="w-full p-3 border border-gray-200 rounded-lg outline-none" placeholder="e.g. SDE-1">
+        </div>
+      </div>
+      <div class="mt-4">
+        <label class="block text-sm font-medium text-gray-600 mb-1">Description</label>
+        <textarea id="jobDesc" rows="3" class="w-full p-3 border border-gray-200 rounded-lg outline-none" placeholder="Job description, requirements, etc."></textarea>
+      </div>
+      <button id="postJobBtn" class="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition">
+        Post Job
+      </button>
+      <span id="jobPostMsg" class="ml-3 text-green-600 text-sm hidden">✓ Job posted</span>
+    </div>
+  </div>
+
+  <!-- Mentorship Section -->
+  <div id="sec-mentorship" class="dashboard-section hidden">
+    <h1 class="text-2xl font-bold text-indigo-600 mb-6">📅 Mentorship Slots</h1>
+    <div class="section-card mb-6">
+      <p class="text-gray-500 text-sm mb-4">Set available hours for mock interviews or career guidance. Students can book these slots.</p>
+      <div class="flex flex-wrap gap-4 items-end">
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Date</label>
+          <input id="slotDate" type="date" class="p-3 border border-gray-200 rounded-lg outline-none">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Time</label>
+          <input id="slotTime" type="time" class="p-3 border border-gray-200 rounded-lg outline-none">
+        </div>
+        <button id="addSlotBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition">
+          Add Slot
+        </button>
+      </div>
+    </div>
+    <div id="slotsList" class="space-y-3"></div>
+  </div>
+
+  <!-- My Posted Jobs Section -->
+  <div id="sec-myjobs" class="dashboard-section hidden">
+    <h1 class="text-2xl font-bold text-indigo-600 mb-6">📋 My Posted Jobs</h1>
+    <div id="myJobsList" class="space-y-3"></div>
+  </div>
+
+</main>
+
+<script src="js/auth.js"></script>
+<script>
+  const user = requireAuth('alumni');
+  if (user) document.getElementById('welcomeUser').textContent = 'Welcome, ' + user.name;
+</script>
 <script src="js/alumni.js"></script>
 <script src="js/chatbot.js"></script>
 </body>

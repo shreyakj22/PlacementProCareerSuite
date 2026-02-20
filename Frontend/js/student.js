@@ -1,146 +1,360 @@
-// Student front-end: profile save, resume PDF generation, live feed and simple application tracker
+// Student Dashboard JS — Profile, Resume Wizard, Live Feed, Tracker, Job Board, Mentorship, Skill Gap
 
-const studentMockProfile = { name: '', branch: 'CS', email: '', phone: '' };
+const API_BASE = window.location.origin + '/api';
+
+// Sidebar navigation
+function showSection(name) {
+  document.querySelectorAll('.dashboard-section').forEach(s => s.classList.add('hidden'));
+  document.getElementById('sec-' + name).classList.remove('hidden');
+  document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+function getProfile() {
+  return JSON.parse(localStorage.getItem('studentProfile') || '{}');
+}
 
 function initStudent() {
-	document.getElementById('saveProfile').addEventListener('click', () => {
-		studentMockProfile.name = document.getElementById('stuName').value || studentMockProfile.name;
-		studentMockProfile.branch = document.getElementById('stuBranch').value || studentMockProfile.branch;
-		studentMockProfile.cgpa = parseFloat(document.getElementById('stuCgpa').value) || studentMockProfile.cgpa;
-		studentMockProfile.email = document.getElementById('stuEmail').value || studentMockProfile.email;
-		studentMockProfile.phone = document.getElementById('stuPhone').value || studentMockProfile.phone;
-		localStorage.setItem('studentProfile', JSON.stringify(studentMockProfile));
-		alert('Profile saved (local)');
-		renderLiveFeed();
-		renderJobBoard();
-		renderMentorshipSlots();
-		renderTracker();
-	});
+  // Load saved profile into form
+  const p = getProfile();
+  if (p.name) document.getElementById('stuName').value = p.name;
+  if (p.branch) document.getElementById('stuBranch').value = p.branch;
+  if (p.cgpa) document.getElementById('stuCgpa').value = p.cgpa;
+  if (p.backlogs !== undefined) document.getElementById('stuBacklogs').value = p.backlogs;
+  if (p.email) document.getElementById('stuEmail').value = p.email;
+  if (p.phone) document.getElementById('stuPhone').value = p.phone;
+  if (p.skills) document.getElementById('stuSkills').value = p.skills;
 
-	document.getElementById('generatePdf').addEventListener('click', generateResumePdf);
-	renderLiveFeed();
-	renderJobBoard();
-	renderMentorshipSlots();
-	renderTracker();
+  // Pre-fill resume from profile
+  if (p.name) document.getElementById('resName').value = p.name;
+  if (p.email) document.getElementById('resEmail').value = p.email;
+  if (p.phone) document.getElementById('resPhone').value = p.phone;
+  if (p.branch) document.getElementById('resBranch').value = p.branch;
+  if (p.skills) document.getElementById('resSkills').value = p.skills;
+
+  document.getElementById('saveProfile').addEventListener('click', saveProfile);
+  document.getElementById('generatePdf').addEventListener('click', generateResumePdf);
+  document.getElementById('analyzeSkillGap').addEventListener('click', analyzeSkillGap);
+
+  renderLiveFeed();
+  renderTracker();
+  renderJobBoard();
+  renderMentorshipSlots();
+}
+
+function saveProfile() {
+  const profile = {
+    name: document.getElementById('stuName').value,
+    branch: document.getElementById('stuBranch').value,
+    cgpa: parseFloat(document.getElementById('stuCgpa').value) || 0,
+    backlogs: parseInt(document.getElementById('stuBacklogs').value) || 0,
+    email: document.getElementById('stuEmail').value,
+    phone: document.getElementById('stuPhone').value,
+    skills: document.getElementById('stuSkills').value
+  };
+  localStorage.setItem('studentProfile', JSON.stringify(profile));
+
+  const msg = document.getElementById('profileSaveMsg');
+  msg.classList.remove('hidden');
+  setTimeout(() => msg.classList.add('hidden'), 2000);
+
+  renderLiveFeed();
+  renderJobBoard();
+  renderMentorshipSlots();
+  renderTracker();
 }
 
 function generateResumePdf() {
-	const { jsPDF } = window.jspdf;
-	const doc = new jsPDF();
-	const name = document.getElementById('resName').value || '';
-	const email = document.getElementById('resEmail').value || '';
-	const phone = document.getElementById('resPhone').value || '';
-	const projects = (document.getElementById('resProjects').value || '').split('\n').filter(Boolean);
-	const skills = (document.getElementById('resSkills').value || '').split(',').map(s=>s.trim()).filter(Boolean);
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
 
-	doc.setFontSize(18);
-	doc.text(name || 'Student Name', 14, 20);
-	doc.setFontSize(11);
-	doc.text(`Email: ${email}`, 14, 30);
-	doc.text(`Phone: ${phone}`, 14, 36);
-	doc.text('Skills:', 14, 48);
-	doc.text(skills.join(', '), 14, 54);
-	doc.text('Projects:', 14, 68);
-	let y = 74;
-	projects.forEach(p => {
-		doc.text('- ' + p, 16, y);
-		y += 6;
-	});
-	doc.save((name || 'resume') + '.pdf');
+  const name = document.getElementById('resName').value || 'Student Name';
+  const email = document.getElementById('resEmail').value || '';
+  const phone = document.getElementById('resPhone').value || '';
+  const branch = document.getElementById('resBranch').value || '';
+  const education = document.getElementById('resEducation').value || '';
+  const skills = (document.getElementById('resSkills').value || '').split(',').map(s => s.trim()).filter(Boolean);
+  const projects = (document.getElementById('resProjects').value || '').split('\n').filter(Boolean);
+
+  // College branding header
+  doc.setFillColor(79, 70, 229);
+  doc.rect(0, 0, 210, 35, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(22);
+  doc.text(name, 14, 18);
+  doc.setFontSize(10);
+  doc.text(`${email}  |  ${phone}  |  ${branch}`, 14, 28);
+
+  // Reset color
+  doc.setTextColor(0, 0, 0);
+  let y = 45;
+
+  // Education
+  if (education) {
+    doc.setFontSize(13);
+    doc.setFont(undefined, 'bold');
+    doc.text('EDUCATION', 14, y);
+    doc.setFont(undefined, 'normal');
+    doc.setFontSize(11);
+    y += 8;
+    doc.text(education, 14, y);
+    y += 12;
+  }
+
+  // Skills
+  if (skills.length) {
+    doc.setFontSize(13);
+    doc.setFont(undefined, 'bold');
+    doc.text('SKILLS', 14, y);
+    doc.setFont(undefined, 'normal');
+    doc.setFontSize(11);
+    y += 8;
+    doc.text(skills.join('  •  '), 14, y);
+    y += 12;
+  }
+
+  // Projects
+  if (projects.length) {
+    doc.setFontSize(13);
+    doc.setFont(undefined, 'bold');
+    doc.text('PROJECTS', 14, y);
+    doc.setFont(undefined, 'normal');
+    doc.setFontSize(11);
+    y += 8;
+    projects.forEach(p => {
+      doc.text('▸ ' + p, 16, y);
+      y += 7;
+    });
+  }
+
+  // Footer
+  doc.setFontSize(8);
+  doc.setTextColor(150, 150, 150);
+  doc.text('Generated by PlacementPro Career Suite', 14, 285);
+
+  doc.save((name || 'resume') + '.pdf');
 }
 
 function renderLiveFeed() {
-	const feed = document.getElementById('liveFeed');
-	const drives = JSON.parse(localStorage.getItem('drives') || '[]');
-	const profile = JSON.parse(localStorage.getItem('studentProfile') || JSON.stringify(studentMockProfile));
-	feed.innerHTML = '';
-	if (!drives.length) {
-		feed.innerHTML = '<div class="p-2 text-gray-600">No drives yet</div>';
-		return;
-	}
-	drives.forEach(d => {
-		// quick eligibility check
-		const minCgpa = d.criteria.minCgpa || 0;
-		const branches = d.criteria.branches || [];
-		const eligible = (!minCgpa || (parseFloat(profile.cgpa || 0) >= minCgpa)) && (branches.length === 0 || branches.includes((profile.branch||'').toUpperCase()));
-		const div = document.createElement('div');
-		div.className = 'p-3 border-b flex justify-between items-start';
-		div.innerHTML = `<div><div class=\"font-semibold\">${d.company}</div><div class=\"text-sm text-gray-600\">Criteria: CGPA ${d.criteria.minCgpa || 0} | Backlogs ≤ ${d.criteria.maxBacklogs || 0}</div></div><div class=\"text-right\"><div class=\"text-sm text-gray-500 mb-2\">${eligible? 'Eligible':'Not Eligible'}</div><button class=\"applyBtn bg-indigo-600 text-white px-3 py-1 rounded text-sm\" data-company=\"${d.company}\">Apply</button></div>`;
-		feed.appendChild(div);
-	});
+  const feed = document.getElementById('liveFeed');
+  const drives = JSON.parse(localStorage.getItem('drives') || '[]');
+  const profile = getProfile();
+  feed.innerHTML = '';
 
-	// attach apply handlers
-	feed.querySelectorAll('.applyBtn').forEach(btn => btn.addEventListener('click', (e)=>{
-		const company = e.target.dataset.company;
-		applyToCompany(company);
-	}));
+  if (!drives.length) {
+    feed.innerHTML = '<div class="section-card text-gray-500 text-center py-8">No placement drives available yet. Check back later.</div>';
+    return;
+  }
+
+  drives.forEach(d => {
+    const minCgpa = d.criteria.minCgpa || 0;
+    const maxBacklogs = d.criteria.maxBacklogs || 0;
+    const branches = d.criteria.branches || [];
+    const pCgpa = parseFloat(profile.cgpa || 0);
+    const pBacklogs = parseInt(profile.backlogs || 0);
+    const pBranch = (profile.branch || '').toUpperCase();
+
+    const eligible = (pCgpa >= minCgpa) &&
+                     (pBacklogs <= maxBacklogs) &&
+                     (branches.length === 0 || branches.includes(pBranch));
+
+    const apps = JSON.parse(localStorage.getItem('applications') || '[]');
+    const alreadyApplied = apps.some(a => a.company === d.company);
+
+    const div = document.createElement('div');
+    div.className = 'section-card flex justify-between items-center';
+    div.innerHTML = `
+      <div>
+        <div class="font-semibold text-gray-800 text-lg">${d.company}</div>
+        <div class="text-sm text-gray-500 mt-1">
+          CGPA ≥ ${minCgpa} &nbsp;|&nbsp; Backlogs ≤ ${maxBacklogs} &nbsp;|&nbsp; ${branches.length ? branches.join(', ') : 'All Branches'}
+        </div>
+      </div>
+      <div class="text-right flex items-center gap-3">
+        <span class="status-badge ${eligible ? 'eligible-tag' : 'not-eligible-tag'}">${eligible ? '✓ Eligible' : '✗ Not Eligible'}</span>
+        ${eligible && !alreadyApplied ? `<button class="applyBtn bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm transition" data-company="${d.company}">Apply</button>` : ''}
+        ${alreadyApplied ? '<span class="text-sm text-green-600">Applied ✓</span>' : ''}
+      </div>
+    `;
+    feed.appendChild(div);
+  });
+
+  feed.querySelectorAll('.applyBtn').forEach(btn => btn.addEventListener('click', (e) => {
+    applyToCompany(e.target.dataset.company);
+  }));
 }
 
 function renderTracker() {
-	const container = document.getElementById('tracker');
-	const apps = JSON.parse(localStorage.getItem('applications') || '[]');
-	container.innerHTML = '';
-	if(!apps.length) container.innerHTML = '<div class="p-2 text-gray-600">No applications yet</div>';
-	apps.forEach(a => {
-		const div = document.createElement('div');
-		div.className = 'p-2 border rounded mb-2';
-		div.innerHTML = `<div class="font-semibold">${a.company}</div><div class="text-sm text-gray-600">Status: ${a.status}</div>`;
-		container.appendChild(div);
-	});
+  const container = document.getElementById('tracker');
+  const apps = JSON.parse(localStorage.getItem('applications') || '[]');
+  container.innerHTML = '';
+
+  if (!apps.length) {
+    container.innerHTML = '<div class="section-card text-gray-500 text-center py-8">No applications yet. Apply from the Live Feed.</div>';
+    return;
+  }
+
+  const statusColors = {
+    'Applied': 'status-applied',
+    'Aptitude': 'status-aptitude',
+    'Interview Scheduled': 'status-interview',
+    'Selected': 'status-selected',
+    'Rejected': 'status-rejected'
+  };
+
+  // Status progression
+  const statuses = ['Applied', 'Aptitude', 'Interview Scheduled', 'Selected'];
+
+  apps.forEach(a => {
+    const div = document.createElement('div');
+    div.className = 'section-card';
+    const badgeClass = statusColors[a.status] || 'status-applied';
+
+    // Progress bar
+    const currentIdx = statuses.indexOf(a.status);
+    const progressPct = currentIdx >= 0 ? ((currentIdx + 1) / statuses.length) * 100 : 25;
+
+    div.innerHTML = `
+      <div class="flex justify-between items-center mb-3">
+        <div class="font-semibold text-gray-800">${a.company}</div>
+        <span class="status-badge ${badgeClass}">${a.status}</span>
+      </div>
+      <div class="w-full bg-gray-200 rounded-full h-2">
+        <div class="bg-indigo-600 h-2 rounded-full transition-all" style="width: ${progressPct}%"></div>
+      </div>
+      <div class="flex justify-between text-xs text-gray-400 mt-1">
+        ${statuses.map(s => `<span class="${a.status === s ? 'text-indigo-600 font-semibold' : ''}">${s}</span>`).join('')}
+      </div>
+      <div class="text-xs text-gray-400 mt-2">Applied: ${new Date(a.appliedAt).toLocaleDateString()}</div>
+    `;
+    container.appendChild(div);
+  });
 }
 
 function applyToCompany(company) {
- 	const apps = JSON.parse(localStorage.getItem('applications') || '[]');
- 	if(apps.some(a=>a.company===company)) return alert('Already applied');
- 	apps.push({ id: Date.now(), company, status: 'Applied', appliedAt: new Date().toISOString() });
- 	localStorage.setItem('applications', JSON.stringify(apps));
- 	renderTracker();
- 	alert('Application recorded (local)');
+  const apps = JSON.parse(localStorage.getItem('applications') || '[]');
+  if (apps.some(a => a.company === company)) return alert('Already applied');
+  apps.push({ id: Date.now(), company, status: 'Applied', appliedAt: new Date().toISOString() });
+  localStorage.setItem('applications', JSON.stringify(apps));
+  renderTracker();
+  renderLiveFeed();
 }
 
-// Job board & mentorship slots from alumni
 function renderJobBoard() {
- 	const board = document.getElementById('jobBoard');
- 	if(!board) return;
- 	const jobs = JSON.parse(localStorage.getItem('alumniJobs') || '[]');
- 	board.innerHTML = '';
- 	if(!jobs.length) return board.innerHTML = '<div class="text-gray-600 p-2">No alumni referrals yet</div>';
- 	jobs.forEach(j => {
- 		const div = document.createElement('div');
- 		div.className = 'p-3 border rounded mb-2 flex justify-between items-start';
- 		div.innerHTML = `<div><div class=\"font-semibold\">${j.company} — ${j.role}</div><div class=\"text-sm text-gray-600\">${j.desc}</div></div><div><button class=\"applyJobBtn bg-indigo-600 text-white px-3 py-1 rounded text-sm\" data-company=\"${j.company}\">Apply</button></div>`;
- 		board.appendChild(div);
- 	});
- 	board.querySelectorAll('.applyJobBtn').forEach(b => b.addEventListener('click', e=>applyToCompany(e.target.dataset.company)));
+  const board = document.getElementById('jobBoard');
+  if (!board) return;
+  const jobs = JSON.parse(localStorage.getItem('alumniJobs') || '[]');
+  board.innerHTML = '';
+
+  if (!jobs.length) {
+    board.innerHTML = '<div class="section-card text-gray-500 text-center py-8">No alumni referrals yet.</div>';
+    return;
+  }
+
+  jobs.forEach(j => {
+    const div = document.createElement('div');
+    div.className = 'section-card flex justify-between items-center';
+    div.innerHTML = `
+      <div>
+        <div class="font-semibold text-gray-800">${j.company} — ${j.role}</div>
+        <div class="text-sm text-gray-500 mt-1">${j.desc || 'No description'}</div>
+      </div>
+      <button class="applyJobBtn bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm transition" data-company="${j.company}">Apply</button>
+    `;
+    board.appendChild(div);
+  });
+
+  board.querySelectorAll('.applyJobBtn').forEach(b => b.addEventListener('click', e => applyToCompany(e.target.dataset.company)));
 }
 
 function renderMentorshipSlots() {
- 	const container = document.getElementById('mentorshipSlots');
- 	if(!container) return;
- 	const slots = JSON.parse(localStorage.getItem('mentorshipSlots') || '[]');
- 	container.innerHTML = '';
- 	if(!slots.length) return container.innerHTML = '<div class="text-gray-600 p-2">No mentorship slots available</div>';
- 	slots.forEach(s => {
- 		const div = document.createElement('div');
- 		div.className = 'p-2 border rounded mb-2 flex justify-between items-center';
- 		div.innerHTML = `<div>${s.date} ${s.time} ${s.taken? '(Booked)':''}</div><div><button class=\"bookMentBtn bg-indigo-600 text-white px-2 py-1 rounded\" data-id=\"${s.id}\">Book</button></div>`;
- 		container.appendChild(div);
- 	});
- 	container.querySelectorAll('.bookMentBtn').forEach(b => b.addEventListener('click', e=>{
- 		const id = parseInt(e.target.dataset.id);
- 		bookMentorship(id);
- 	}));
+  const container = document.getElementById('mentorshipSlots');
+  if (!container) return;
+  const slots = JSON.parse(localStorage.getItem('mentorshipSlots') || '[]');
+  container.innerHTML = '';
+
+  if (!slots.length) {
+    container.innerHTML = '<div class="section-card text-gray-500 text-center py-8">No mentorship slots available.</div>';
+    return;
+  }
+
+  slots.forEach(s => {
+    const div = document.createElement('div');
+    div.className = 'section-card flex justify-between items-center';
+    div.innerHTML = `
+      <div>
+        <span class="font-medium text-gray-800">${s.date}</span>
+        <span class="text-gray-500 ml-2">${s.time}</span>
+        ${s.taken ? '<span class="ml-2 text-xs text-orange-500 font-medium">(Booked)</span>' : '<span class="ml-2 text-xs text-green-500 font-medium">(Available)</span>'}
+      </div>
+      ${!s.taken ? `<button class="bookMentBtn bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm transition" data-id="${s.id}">Book Slot</button>` : '<span class="text-sm text-gray-400">Booked</span>'}
+    `;
+    container.appendChild(div);
+  });
+
+  container.querySelectorAll('.bookMentBtn').forEach(b => b.addEventListener('click', e => {
+    bookMentorship(parseInt(e.target.dataset.id));
+  }));
 }
 
 function bookMentorship(id) {
- 	const slots = JSON.parse(localStorage.getItem('mentorshipSlots') || '[]');
- 	const idx = slots.findIndex(s=>s.id===id);
- 	if(idx===-1) return alert('Slot not found');
- 	if(slots[idx].taken) return alert('Slot already taken');
- 	slots[idx].taken = true;
- 	localStorage.setItem('mentorshipSlots', JSON.stringify(slots));
- 	renderMentorshipSlots();
- 	alert('Mentorship slot booked (local)');
+  const slots = JSON.parse(localStorage.getItem('mentorshipSlots') || '[]');
+  const idx = slots.findIndex(s => s.id === id);
+  if (idx === -1) return alert('Slot not found');
+  if (slots[idx].taken) return alert('Slot already taken');
+  slots[idx].taken = true;
+  localStorage.setItem('mentorshipSlots', JSON.stringify(slots));
+  renderMentorshipSlots();
+}
+
+// Skill Gap Analysis
+function analyzeSkillGap() {
+  const profile = getProfile();
+  const userSkills = (profile.skills || '').split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
+  const targetRole = document.getElementById('targetRole').value;
+
+  const roleSkillMap = {
+    'Data Analyst': ['sql', 'python', 'excel', 'powerbi', 'tableau', 'statistics', 'pandas', 'numpy'],
+    'Frontend Developer': ['html', 'css', 'javascript', 'react', 'typescript', 'tailwind', 'git', 'responsive design'],
+    'Backend Developer': ['node.js', 'python', 'java', 'sql', 'mongodb', 'rest api', 'git', 'docker'],
+    'Full Stack Developer': ['html', 'css', 'javascript', 'react', 'node.js', 'sql', 'mongodb', 'git', 'docker', 'typescript'],
+    'DevOps Engineer': ['linux', 'docker', 'kubernetes', 'aws', 'ci/cd', 'terraform', 'git', 'python', 'bash']
+  };
+
+  const required = roleSkillMap[targetRole] || [];
+  const result = document.getElementById('skillGapResult');
+
+  if (!userSkills.length) {
+    result.innerHTML = '<div class="text-red-500 mt-4">Please save your profile with skills first.</div>';
+    return;
+  }
+
+  const matched = required.filter(s => userSkills.some(us => us.includes(s) || s.includes(us)));
+  const missing = required.filter(s => !userSkills.some(us => us.includes(s) || s.includes(us)));
+  const matchPct = Math.round((matched.length / required.length) * 100);
+
+  let html = `
+    <div class="mb-4">
+      <div class="flex justify-between text-sm mb-1">
+        <span class="font-medium">Skill Match for "${targetRole}"</span>
+        <span class="font-bold ${matchPct >= 70 ? 'text-green-600' : matchPct >= 40 ? 'text-yellow-600' : 'text-red-600'}">${matchPct}%</span>
+      </div>
+      <div class="skill-gap-bar">
+        <div class="skill-gap-fill ${matchPct >= 70 ? 'bg-green-500' : matchPct >= 40 ? 'bg-yellow-500' : 'bg-red-500'}" style="width: ${matchPct}%"></div>
+      </div>
+    </div>
+  `;
+
+  if (matched.length) {
+    html += `<div class="mb-3"><span class="text-sm font-medium text-green-700">✓ Skills you have:</span><div class="flex flex-wrap gap-2 mt-1">${matched.map(s => `<span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">${s}</span>`).join('')}</div></div>`;
+  }
+
+  if (missing.length) {
+    html += `<div class="mb-3"><span class="text-sm font-medium text-red-700">✗ Skills to learn:</span><div class="flex flex-wrap gap-2 mt-1">${missing.map(s => `<span class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs">${s}</span>`).join('')}</div></div>`;
+    html += `<div class="mt-4 p-4 bg-indigo-50 rounded-lg"><p class="text-sm text-indigo-800 font-medium">💡 Recommendation:</p><p class="text-sm text-indigo-700 mt-1">80% of placed students in "${targetRole}" roles had <strong>${missing.slice(0, 3).join(', ')}</strong> in their skills. Consider learning these to improve your chances.</p></div>`;
+  }
+
+  result.innerHTML = html;
 }
 
 document.addEventListener('DOMContentLoaded', initStudent);

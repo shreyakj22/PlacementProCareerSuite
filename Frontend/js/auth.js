@@ -1,51 +1,34 @@
-function loginUser() {
+// Auth utility functions used across pages
 
-  const role = document.getElementById('role').value;
-  const enteredCaptcha = document.getElementById('captchaInput').value;
+function getToken() {
+  return localStorage.getItem('token');
+}
 
-  // CAPTCHA CHECK
-  if (enteredCaptcha !== window.currentCaptcha) {
-    alert("Invalid Captcha");
-    return;
+function getUser() {
+  try {
+    return JSON.parse(localStorage.getItem('user'));
+  } catch {
+    return null;
   }
+}
 
-  if (role === "student") {
+function logout() {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  window.location.href = 'login.html';
+}
 
-    const email = document.getElementById('stuEmail').value;
-    const username = document.getElementById('stuUsername').value;
-    const password = document.getElementById('stuPassword').value;
-
-    if (email && username && password) {
-      window.location.href = "student.html";
-    } else {
-      alert("Please fill all student fields");
-    }
-
+function requireAuth(expectedRole) {
+  const token = getToken();
+  const user = getUser();
+  if (!token || !user) {
+    window.location.href = 'login.html';
+    return null;
   }
-
-  else if (role === "tpo") {
-
-    const tpoId = document.getElementById('tpoId').value;
-    const password = document.getElementById('tpoPassword').value;
-
-    if (tpoId && password) {
-      window.location.href = "tpo.html";
-    } else {
-      alert("Please fill TPO details");
-    }
-
+  if (expectedRole && user.role !== expectedRole) {
+    alert('Access denied. You are logged in as: ' + user.role);
+    window.location.href = 'login.html';
+    return null;
   }
-
-  else if (role === "alumni") {
-
-    const email = document.getElementById('alEmail').value;
-    const password = document.getElementById('alPassword').value;
-
-    if (email && password) {
-      window.location.href = "alumni.html";
-    } else {
-      alert("Please fill alumni details");
-    }
-
-  }
+  return user;
 }

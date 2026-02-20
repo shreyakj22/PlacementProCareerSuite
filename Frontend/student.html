@@ -1,63 +1,202 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Student Dashboard</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Dashboard - PlacementPro</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Poppins', sans-serif; }
+  .sidebar-link { cursor: pointer; padding: 8px 12px; border-radius: 8px; transition: background 0.2s; }
+  .sidebar-link:hover, .sidebar-link.active { background: rgba(255,255,255,0.15); }
+  .section-card { background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 24px; }
+  .status-badge { display: inline-block; padding: 2px 10px; border-radius: 9999px; font-size: 12px; font-weight: 500; }
+  .status-applied { background: #dbeafe; color: #1d4ed8; }
+  .status-aptitude { background: #fef3c7; color: #b45309; }
+  .status-interview { background: #ede9fe; color: #6d28d9; }
+  .status-selected { background: #d1fae5; color: #047857; }
+  .status-rejected { background: #fee2e2; color: #b91c1c; }
+  .eligible-tag { background: #d1fae5; color: #047857; }
+  .not-eligible-tag { background: #fee2e2; color: #b91c1c; }
+  .skill-gap-bar { height: 8px; border-radius: 4px; background: #e5e7eb; overflow: hidden; }
+  .skill-gap-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
+</style>
 </head>
 
-<body class="bg-gray-100 flex">
+<body class="bg-gray-50 min-h-screen flex">
 
-<div class="w-64 bg-indigo-700 text-white min-h-screen p-6">
-  <h2 class="text-xl font-bold mb-6">Student Panel</h2>
-  <ul class="space-y-4">
-    <li>Profile</li>
-    <li>Resume Builder</li>
-    <li>Applications</li>
-  </ul>
-</div>
-
-<div class="flex-1 p-8">
-  <h1 class="text-2xl font-bold text-indigo-600">Profile</h1>
-
-  <div class="bg-white p-6 rounded-xl shadow mt-6">
-    <input id="stuName" class="w-full p-2 border rounded mb-2" placeholder="Name">
-    <input id="stuBranch" class="w-full p-2 border rounded mb-2" placeholder="Branch">
-    <input id="stuCgpa" type="number" step="0.01" class="w-full p-2 border rounded mb-2" placeholder="CGPA">
-    <input id="stuEmail" class="w-full p-2 border rounded mb-2" placeholder="Email">
-    <input id="stuPhone" class="w-full p-2 border rounded mb-2" placeholder="Phone">
-    <button id="saveProfile" class="bg-indigo-600 text-white px-4 py-2 rounded">
-      Save
-    </button>
+<!-- Sidebar -->
+<aside class="w-64 bg-gradient-to-b from-indigo-700 to-indigo-900 text-white min-h-screen p-6 flex flex-col justify-between fixed left-0 top-0">
+  <div>
+    <h2 class="text-xl font-bold mb-1">🎓 Student Panel</h2>
+    <p id="welcomeUser" class="text-sm opacity-70 mb-8"></p>
+    <nav>
+      <ul class="space-y-2">
+        <li class="sidebar-link active" onclick="showSection('profile')">📋 Profile</li>
+        <li class="sidebar-link" onclick="showSection('resume')">📄 Resume Wizard</li>
+        <li class="sidebar-link" onclick="showSection('livefeed')">📡 Live Feed</li>
+        <li class="sidebar-link" onclick="showSection('tracker')">📊 Application Tracker</li>
+        <li class="sidebar-link" onclick="showSection('jobboard')">💼 Alumni Job Board</li>
+        <li class="sidebar-link" onclick="showSection('mentorship')">🤝 Mentorship Slots</li>
+        <li class="sidebar-link" onclick="showSection('skillgap')">📈 Skill Gap Analysis</li>
+      </ul>
+    </nav>
   </div>
-</div>
-</div>
+  <button onclick="logout()" class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg font-medium transition">
+    ← Logout
+  </button>
+</aside>
 
-<div class="p-8">
-  <h2 class="text-xl font-semibold">Resume Wizard</h2>
-  <div class="bg-white p-6 rounded shadow mt-4">
-    <input id="resName" class="w-full p-2 border rounded mb-2" placeholder="Full Name">
-    <input id="resEmail" class="w-full p-2 border rounded mb-2" placeholder="Email">
-    <input id="resPhone" class="w-full p-2 border rounded mb-2" placeholder="Phone">
-    <textarea id="resProjects" class="w-full p-2 border rounded mb-2" placeholder="Projects (one per line)"></textarea>
-    <input id="resSkills" class="w-full p-2 border rounded mb-2" placeholder="Skills (comma separated)">
-    <button id="generatePdf" class="bg-indigo-600 text-white px-4 py-2 rounded">Generate PDF Resume</button>
+<!-- Main Content -->
+<main class="flex-1 ml-64 p-8">
+
+  <!-- Profile Section -->
+  <div id="sec-profile" class="dashboard-section">
+    <h1 class="text-2xl font-bold text-indigo-600 mb-6">My Profile</h1>
+    <div class="section-card">
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Full Name</label>
+          <input id="stuName" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-300 focus:border-indigo-400 outline-none" placeholder="Your Name">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Branch</label>
+          <select id="stuBranch" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none">
+            <option value="CS">CS</option>
+            <option value="MCA">MCA</option>
+            <option value="IT">IT</option>
+            <option value="ECE">ECE</option>
+            <option value="ME">ME</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">CGPA</label>
+          <input id="stuCgpa" type="number" step="0.01" min="0" max="10" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none" placeholder="e.g. 8.5">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Backlogs</label>
+          <input id="stuBacklogs" type="number" min="0" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none" placeholder="0" value="0">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Email</label>
+          <input id="stuEmail" type="email" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none" placeholder="you@email.com">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Phone</label>
+          <input id="stuPhone" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none" placeholder="+91 9876543210">
+        </div>
+      </div>
+      <div class="mt-4">
+        <label class="block text-sm font-medium text-gray-600 mb-1">Skills (comma separated)</label>
+        <input id="stuSkills" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none" placeholder="JavaScript, Python, SQL, React">
+      </div>
+      <button id="saveProfile" class="mt-6 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition">
+        Save Profile
+      </button>
+      <span id="profileSaveMsg" class="ml-3 text-green-600 text-sm hidden">✓ Profile saved</span>
+    </div>
   </div>
 
-  <h2 class="text-xl font-semibold mt-6">Live Feed (Drives you're eligible for)</h2>
-  <div id="liveFeed" class="bg-white p-4 rounded shadow mt-2 max-h-60 overflow-auto"></div>
+  <!-- Resume Wizard Section -->
+  <div id="sec-resume" class="dashboard-section hidden">
+    <h1 class="text-2xl font-bold text-indigo-600 mb-6">📄 Resume Wizard</h1>
+    <div class="section-card">
+      <p class="text-gray-500 text-sm mb-4">Generate a standardized, college-branded PDF resume instantly.</p>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Full Name</label>
+          <input id="resName" class="w-full p-3 border border-gray-200 rounded-lg outline-none" placeholder="Full Name">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Email</label>
+          <input id="resEmail" class="w-full p-3 border border-gray-200 rounded-lg outline-none" placeholder="Email">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Phone</label>
+          <input id="resPhone" class="w-full p-3 border border-gray-200 rounded-lg outline-none" placeholder="Phone">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Branch</label>
+          <input id="resBranch" class="w-full p-3 border border-gray-200 rounded-lg outline-none" placeholder="CS / MCA / IT">
+        </div>
+      </div>
+      <div class="mt-4">
+        <label class="block text-sm font-medium text-gray-600 mb-1">Skills (comma separated)</label>
+        <input id="resSkills" class="w-full p-3 border border-gray-200 rounded-lg outline-none" placeholder="JavaScript, Python, SQL">
+      </div>
+      <div class="mt-4">
+        <label class="block text-sm font-medium text-gray-600 mb-1">Projects (one per line)</label>
+        <textarea id="resProjects" rows="4" class="w-full p-3 border border-gray-200 rounded-lg outline-none" placeholder="E-commerce Website&#10;Chat Application&#10;ML Prediction Model"></textarea>
+      </div>
+      <div class="mt-4">
+        <label class="block text-sm font-medium text-gray-600 mb-1">Education</label>
+        <input id="resEducation" class="w-full p-3 border border-gray-200 rounded-lg outline-none" placeholder="MCA - XYZ University, CGPA: 8.5">
+      </div>
+      <button id="generatePdf" class="mt-6 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition">
+        📥 Generate PDF Resume
+      </button>
+    </div>
+  </div>
 
-  <h2 class="text-xl font-semibold mt-6">Application Tracker</h2>
-  <div id="tracker" class="bg-white p-4 rounded shadow mt-2"></div>
+  <!-- Live Feed Section -->
+  <div id="sec-livefeed" class="dashboard-section hidden">
+    <h1 class="text-2xl font-bold text-indigo-600 mb-6">📡 Live Feed — Eligible Drives</h1>
+    <p class="text-gray-500 text-sm mb-4">Showing only drives you are eligible for based on your profile.</p>
+    <div id="liveFeed" class="space-y-3"></div>
+  </div>
 
-  <h2 class="text-xl font-semibold mt-6">Alumni Job Board</h2>
-  <div id="jobBoard" class="bg-white p-4 rounded shadow mt-2 max-h-48 overflow-auto"></div>
+  <!-- Application Tracker Section -->
+  <div id="sec-tracker" class="dashboard-section hidden">
+    <h1 class="text-2xl font-bold text-indigo-600 mb-6">📊 Application Tracker</h1>
+    <p class="text-gray-500 text-sm mb-4">Track your application status: Applied → Aptitude → Interview Scheduled → Selected</p>
+    <div id="tracker" class="space-y-3"></div>
+  </div>
 
-  <h2 class="text-xl font-semibold mt-6">Mentorship Slots (Book with alumni)</h2>
-  <div id="mentorshipSlots" class="bg-white p-4 rounded shadow mt-2 max-h-48 overflow-auto"></div>
-</div>
+  <!-- Alumni Job Board Section -->
+  <div id="sec-jobboard" class="dashboard-section hidden">
+    <h1 class="text-2xl font-bold text-indigo-600 mb-6">💼 Alumni Job Referral Board</h1>
+    <p class="text-gray-500 text-sm mb-4">Job openings posted by alumni from their companies.</p>
+    <div id="jobBoard" class="space-y-3"></div>
+  </div>
+
+  <!-- Mentorship Slots Section -->
+  <div id="sec-mentorship" class="dashboard-section hidden">
+    <h1 class="text-2xl font-bold text-indigo-600 mb-6">🤝 Mentorship Slots</h1>
+    <p class="text-gray-500 text-sm mb-4">Book available hours with alumni for mock interviews or career guidance.</p>
+    <div id="mentorshipSlots" class="space-y-3"></div>
+  </div>
+
+  <!-- Skill Gap Analysis Section -->
+  <div id="sec-skillgap" class="dashboard-section hidden">
+    <h1 class="text-2xl font-bold text-indigo-600 mb-6">📈 Skill Gap Analysis</h1>
+    <p class="text-gray-500 text-sm mb-4">Compare your skills against market demand for your target role.</p>
+    <div class="section-card">
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-600 mb-1">Target Role</label>
+        <select id="targetRole" class="w-full p-3 border border-gray-200 rounded-lg outline-none">
+          <option value="Data Analyst">Data Analyst</option>
+          <option value="Frontend Developer">Frontend Developer</option>
+          <option value="Backend Developer">Backend Developer</option>
+          <option value="Full Stack Developer">Full Stack Developer</option>
+          <option value="DevOps Engineer">DevOps Engineer</option>
+        </select>
+      </div>
+      <button id="analyzeSkillGap" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition">
+        Analyze Skill Gap
+      </button>
+      <div id="skillGapResult" class="mt-6"></div>
+    </div>
+  </div>
+
+</main>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  const user = requireAuth('student');
+  if (user) document.getElementById('welcomeUser').textContent = 'Welcome, ' + user.name;
+</script>
 <script src="js/student.js"></script>
 <script src="js/chatbot.js"></script>
 </body>

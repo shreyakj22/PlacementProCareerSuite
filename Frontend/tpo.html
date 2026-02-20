@@ -1,63 +1,188 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>TPO Dashboard</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TPO Dashboard - PlacementPro</title>
 <script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="css/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
+<style>
+  body { font-family: 'Poppins', sans-serif; }
+  .sidebar-link { cursor: pointer; padding: 8px 12px; border-radius: 8px; transition: background 0.2s; }
+  .sidebar-link:hover, .sidebar-link.active { background: rgba(255,255,255,0.15); }
+  .section-card { background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); padding: 24px; }
+  .student-item { cursor: move; transition: transform 0.15s, box-shadow 0.15s; }
+  .student-item:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+  .stat-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; padding: 20px; }
+  .fc { font-size: 0.85em; }
+  .fc .fc-toolbar-title { font-size: 1.1em; }
+  .notify-pulse { animation: pulse 1.5s ease-in-out; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+</style>
 </head>
 
-<body class="bg-gray-100 flex">
+<body class="bg-gray-50 min-h-screen flex">
 
-<div class="w-64 bg-indigo-700 text-white min-h-screen p-6">
-  <h2 class="text-xl font-bold mb-6">TPO Dashboard</h2>
-  <ul class="space-y-4">
-    <li>Create Drive</li>
-    <li>Eligible Students</li>
-    <li>Interview Schedule</li>
-    <li>Analytics</li>
-  </ul>
-</div>
+<!-- Sidebar -->
+<aside class="w-64 bg-gradient-to-b from-indigo-700 to-indigo-900 text-white min-h-screen p-6 flex flex-col justify-between fixed left-0 top-0">
+  <div>
+    <h2 class="text-xl font-bold mb-1">👨‍💼 TPO Dashboard</h2>
+    <p id="welcomeUser" class="text-sm opacity-70 mb-8"></p>
+    <nav>
+      <ul class="space-y-2">
+        <li class="sidebar-link active" onclick="showSection('criteria')">⚙ Criteria Engine</li>
+        <li class="sidebar-link" onclick="showSection('eligible')">👥 Eligible Students</li>
+        <li class="sidebar-link" onclick="showSection('scheduler')">📅 Interview Scheduler</li>
+        <li class="sidebar-link" onclick="showSection('analytics')">📊 Analytics</li>
+        <li class="sidebar-link" onclick="showSection('drives')">📋 All Drives</li>
+      </ul>
+    </nav>
+  </div>
+  <button onclick="logout()" class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg font-medium transition">
+    ← Logout
+  </button>
+</aside>
 
-<div class="flex-1 p-8">
-  <h1 class="text-2xl font-bold text-indigo-600">Create Placement Drive</h1>
+<!-- Main Content -->
+<main class="flex-1 ml-64 p-8">
 
-  <div class="bg-white p-6 rounded-xl shadow mt-6">
-    <h3 class="font-semibold mb-2">The Criteria Engine</h3>
-    <input id="company" class="w-full p-2 border rounded mb-3" placeholder="Company Name">
-    <div class="grid grid-cols-3 gap-3 mb-3">
-      <input id="minCgpa" type="number" step="0.1" class="p-2 border rounded" placeholder="Min CGPA (e.g. 7.0)">
-      <select id="maxBacklogs" class="p-2 border rounded">
-        <option value="0">Backlogs: 0</option>
-        <option value="1">Backlogs: &le;1</option>
-        <option value="2">Backlogs: &le;2</option>
-      </select>
-      <input id="branches" class="p-2 border rounded" placeholder="Allowed Branches (comma separated, e.g. CS,MCA)">
+  <!-- Criteria Engine Section -->
+  <div id="sec-criteria" class="dashboard-section">
+    <h1 class="text-2xl font-bold text-indigo-600 mb-6">⚙ The Criteria Engine</h1>
+    <div class="section-card">
+      <p class="text-gray-500 text-sm mb-4">Create a placement drive with eligibility constraints. The system instantly filters eligible students.</p>
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-600 mb-1">Company Name</label>
+        <input id="company" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-indigo-300 outline-none" placeholder="e.g. TCS Digital">
+      </div>
+
+      <div class="grid md:grid-cols-3 gap-4 mb-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Minimum CGPA</label>
+          <input id="minCgpa" type="number" step="0.1" min="0" max="10" class="w-full p-3 border border-gray-200 rounded-lg outline-none" placeholder="7.0">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Max Backlogs Allowed</label>
+          <select id="maxBacklogs" class="w-full p-3 border border-gray-200 rounded-lg outline-none">
+            <option value="0">0 (No backlogs)</option>
+            <option value="1">≤ 1</option>
+            <option value="2">≤ 2</option>
+            <option value="3">≤ 3</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-600 mb-1">Allowed Branches</label>
+          <input id="branches" class="w-full p-3 border border-gray-200 rounded-lg outline-none" placeholder="CS, MCA">
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-3">
+        <button id="createDriveBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg font-medium transition">
+          🚀 Create Drive
+        </button>
+        <button id="filterBtn" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition border">
+          🔍 Show Eligible
+        </button>
+        <button id="notifyBtn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-medium transition">
+          📧 Notify All Eligible
+        </button>
+      </div>
+
+      <div id="driveResult" class="mt-4"></div>
     </div>
-    <div class="flex gap-3">
-      <button id="createDriveBtn" class="bg-indigo-600 text-white px-4 py-2 rounded">Create Drive</button>
-      <button id="filterBtn" class="bg-gray-200 text-gray-800 px-4 py-2 rounded">Show Eligible</button>
-      <button id="notifyBtn" class="bg-green-600 text-white px-4 py-2 rounded">Notify All Eligible</button>
-    </div>
-
-    <div id="driveResult" class="mt-4"></div>
   </div>
 
-  <div class="mt-8 grid md:grid-cols-2 gap-6">
-    <div class="bg-white p-4 rounded shadow">
-      <h3 class="font-semibold mb-2">Students (drag to schedule)</h3>
-      <div id="studentsList" class="space-y-2 max-h-96 overflow-auto"></div>
+  <!-- Eligible Students Section -->
+  <div id="sec-eligible" class="dashboard-section hidden">
+    <h1 class="text-2xl font-bold text-indigo-600 mb-6">👥 Eligible Students</h1>
+    <p class="text-gray-500 text-sm mb-4">Students matching the current drive criteria. Drag them to the scheduler to assign interview slots.</p>
+
+    <div id="eligibleCount" class="section-card mb-4 hidden">
+      <div class="flex items-center justify-between">
+        <span class="text-lg font-semibold text-indigo-700" id="eligibleCountText"></span>
+        <button id="quickNotifyBtn" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg font-medium transition text-sm">
+          ⚡ One-click Notify
+        </button>
+      </div>
     </div>
 
-    <div class="bg-white p-4 rounded shadow">
-      <h3 class="font-semibold mb-2">Interview Scheduler</h3>
-      <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
-      <div id="calendar"></div>
+    <div id="studentsList" class="grid md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+    <div id="noStudentsMsg" class="section-card text-gray-500 text-center py-8 hidden">
+      No eligible students found. Use the Criteria Engine to filter students first.
     </div>
   </div>
 
-</div>
+  <!-- Interview Scheduler Section -->
+  <div id="sec-scheduler" class="dashboard-section hidden">
+    <h1 class="text-2xl font-bold text-indigo-600 mb-6">📅 Interview Scheduler</h1>
+    <p class="text-gray-500 text-sm mb-4">Drag-and-drop students onto the calendar to assign interview slots. Overlapping slots are prevented.</p>
+
+    <div class="grid lg:grid-cols-4 gap-6">
+      <div class="lg:col-span-1">
+        <div class="section-card">
+          <h3 class="font-semibold text-gray-700 mb-3">Students to Schedule</h3>
+          <div id="schedulerStudentsList" class="space-y-2 max-h-[500px] overflow-auto"></div>
+        </div>
+      </div>
+      <div class="lg:col-span-3">
+        <div class="section-card">
+          <div id="calendar"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Analytics Section -->
+  <div id="sec-analytics" class="dashboard-section hidden">
+    <h1 class="text-2xl font-bold text-indigo-600 mb-6">📊 Placement Analytics</h1>
+
+    <div class="grid md:grid-cols-4 gap-4 mb-6">
+      <div class="stat-card">
+        <div class="text-3xl font-bold" id="statTotalStudents">0</div>
+        <div class="text-sm opacity-80 mt-1">Total Students</div>
+      </div>
+      <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+        <div class="text-3xl font-bold" id="statTotalDrives">0</div>
+        <div class="text-sm opacity-80 mt-1">Active Drives</div>
+      </div>
+      <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+        <div class="text-3xl font-bold" id="statApplications">0</div>
+        <div class="text-sm opacity-80 mt-1">Applications</div>
+      </div>
+      <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+        <div class="text-3xl font-bold" id="statScheduled">0</div>
+        <div class="text-sm opacity-80 mt-1">Interviews Scheduled</div>
+      </div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-6">
+      <div class="section-card">
+        <h3 class="font-semibold text-gray-700 mb-3">Branch-wise Distribution</h3>
+        <div id="branchChart" class="space-y-3"></div>
+      </div>
+      <div class="section-card">
+        <h3 class="font-semibold text-gray-700 mb-3">Recent Drives</h3>
+        <div id="recentDrives" class="space-y-2"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- All Drives Section -->
+  <div id="sec-drives" class="dashboard-section hidden">
+    <h1 class="text-2xl font-bold text-indigo-600 mb-6">📋 All Placement Drives</h1>
+    <div id="allDrivesList" class="space-y-3"></div>
+  </div>
+
+</main>
 
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  const user = requireAuth('tpo');
+  if (user) document.getElementById('welcomeUser').textContent = 'Welcome, ' + user.name;
+</script>
 <script src="js/tpo.js"></script>
 <script src="js/chatbot.js"></script>
 </body>

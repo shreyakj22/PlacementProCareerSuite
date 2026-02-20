@@ -3,13 +3,24 @@
 <head>
   <title>Login - PlacementPro</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
 
 <div class="bg-white p-8 rounded-xl shadow-lg w-96">
-  <h2 class="text-2xl font-bold text-indigo-600 text-center">Login</h2>
+  <h2 class="text-2xl font-bold text-indigo-600 text-center" id="formTitle">Login</h2>
+
+  <!-- Toggle between Login and Register -->
+  <div class="flex justify-center mt-3 gap-4 text-sm">
+    <button id="showLogin" class="text-indigo-600 font-semibold underline">Login</button>
+    <button id="showRegister" class="text-gray-500 hover:text-indigo-600">Register</button>
+  </div>
+
+  <!-- Register-only field -->
+  <div id="nameField" class="mt-4 hidden">
+    <input id="regName" class="w-full p-2 border rounded" placeholder="Full Name">
+  </div>
 
   <div id="roleFields" class="mt-4"></div>
 
@@ -27,106 +38,190 @@
     <option value="alumni">Alumni</option>
   </select>
 
+  <div id="errorMsg" class="text-red-500 text-sm mt-2 hidden"></div>
+  <div id="successMsg" class="text-green-600 text-sm mt-2 hidden"></div>
+
   <button id="loginBtn"
-          class="w-full bg-indigo-600 text-white py-2 rounded mt-6">
+          class="w-full bg-indigo-600 text-white py-2 rounded mt-4 hover:bg-indigo-700 transition">
     Login
   </button>
 </div>
 
-<!-- Inline auth (fallback if external file doesn't load) -->
 <script>
-function loginUser() {
+const API_BASE = "http://localhost:5000/api";
+let isRegisterMode = false;
 
-  const role = document.getElementById('role').value;
-  const enteredCaptcha = document.getElementById('captchaInput').value;
-
-  // CAPTCHA CHECK
-  if (enteredCaptcha !== window.currentCaptcha) {
-    alert("Invalid Captcha");
-    return;
-  }
-
-  if (role === "student") {
-
-    const email = document.getElementById('stuEmail').value;
-    const username = document.getElementById('stuUsername').value;
-    const password = document.getElementById('stuPassword').value;
-
-    if (email && username && password) {
-      window.location.href = "student.html";
-    } else {
-      alert("Please fill all student fields");
-    }
-
-  }
-
-  else if (role === "tpo") {
-
-    const tpoId = document.getElementById('tpoId').value;
-    const password = document.getElementById('tpoPassword').value;
-
-    if (tpoId && password) {
-      window.location.href = "tpo.html";
-    } else {
-      alert("Please fill TPO details");
-    }
-
-  }
-
-  else if (role === "alumni") {
-
-    const email = document.getElementById('alEmail').value;
-    const password = document.getElementById('alPassword').value;
-
-    if (email && password) {
-      window.location.href = "alumni.html";
-    } else {
-      alert("Please fill alumni details");
-    }
-
-  }
-}
-</script>
-
-<script>
-function getQueryParam(name){
+function getQueryParam(name) {
   const url = new URL(window.location.href);
   return url.searchParams.get(name);
 }
 
-function genCaptcha(){
-  const val = Math.floor(10000 + Math.random()*90000).toString();
+function genCaptcha() {
+  const val = Math.floor(10000 + Math.random() * 90000).toString();
   window.currentCaptcha = val;
   document.getElementById('captchaBox').innerText = val;
 }
 
-function renderRoleFields(role){
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+  document.getElementById('successMsg').classList.add('hidden');
+}
+
+function showSuccess(msg) {
+  const el = document.getElementById('successMsg');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+  document.getElementById('errorMsg').classList.add('hidden');
+}
+
+function hideMessages() {
+  document.getElementById('errorMsg').classList.add('hidden');
+  document.getElementById('successMsg').classList.add('hidden');
+}
+
+function renderRoleFields(role) {
   const container = document.getElementById('roleFields');
   container.innerHTML = '';
 
-  if(role === 'student'){
+  if (role === 'student') {
     container.innerHTML = `
-      <input id="stuEmail" class="w-full p-2 border rounded mt-2" placeholder="Email">
-      <input id="stuUsername" class="w-full p-2 border rounded mt-2" placeholder="Username">
+      <input id="stuEmail" class="w-full p-2 border rounded mt-2" placeholder="Email" type="email">
       <input id="stuPassword" type="password" class="w-full p-2 border rounded mt-2" placeholder="Password">
     `;
-  }
-
-  else if(role === 'tpo'){
+  } else if (role === 'tpo') {
     container.innerHTML = `
-      <input id="tpoId" class="w-full p-2 border rounded mt-2" placeholder="TPO ID">
+      <input id="tpoEmail" class="w-full p-2 border rounded mt-2" placeholder="Email" type="email">
       <input id="tpoPassword" type="password" class="w-full p-2 border rounded mt-2" placeholder="Password">
     `;
-  }
-
-  else if(role === 'alumni'){
+  } else if (role === 'alumni') {
     container.innerHTML = `
-      <input id="alEmail" class="w-full p-2 border rounded mt-2" placeholder="Email">
+      <input id="alEmail" class="w-full p-2 border rounded mt-2" placeholder="Email" type="email">
       <input id="alPassword" type="password" class="w-full p-2 border rounded mt-2" placeholder="Password">
     `;
   }
 
   document.getElementById('role').value = role;
+}
+
+function getCredentials(role) {
+  if (role === 'student') {
+    return {
+      email: document.getElementById('stuEmail').value,
+      password: document.getElementById('stuPassword').value
+    };
+  } else if (role === 'tpo') {
+    return {
+      email: document.getElementById('tpoEmail').value,
+      password: document.getElementById('tpoPassword').value
+    };
+  } else if (role === 'alumni') {
+    return {
+      email: document.getElementById('alEmail').value,
+      password: document.getElementById('alPassword').value
+    };
+  }
+}
+
+function getRoleDashboard(role) {
+  if (role === 'student') return 'student.html';
+  if (role === 'tpo') return 'tpo.html';
+  if (role === 'alumni') return 'alumni.html';
+  return 'index.html';
+}
+
+async function handleAuth() {
+  hideMessages();
+  const role = document.getElementById('role').value;
+  const enteredCaptcha = document.getElementById('captchaInput').value;
+
+  if (enteredCaptcha !== window.currentCaptcha) {
+    showError("Invalid Captcha");
+    genCaptcha();
+    return;
+  }
+
+  const creds = getCredentials(role);
+  if (!creds.email || !creds.password) {
+    showError("Please fill all fields");
+    return;
+  }
+
+  if (isRegisterMode) {
+    // Register
+    const name = document.getElementById('regName').value.trim();
+    if (!name) {
+      showError("Please enter your name");
+      return;
+    }
+
+    try {
+      const res = await fetch(API_BASE + '/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email: creds.email, password: creds.password, role })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showError(data.message || data.error || "Registration failed");
+        return;
+      }
+      showSuccess("Registered! You can now login.");
+      // Switch to login mode
+      toggleMode(false);
+    } catch (err) {
+      showError("Server error. Make sure backend is running.");
+    }
+  } else {
+    // Login
+    try {
+      const res = await fetch(API_BASE + '/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: creds.email, password: creds.password, role })
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showError(data.message || data.error || "Login failed");
+        genCaptcha();
+        return;
+      }
+      // Store token and user info
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      // Redirect to role dashboard
+      window.location.href = getRoleDashboard(data.user.role);
+    } catch (err) {
+      showError("Server error. Make sure backend is running.");
+    }
+  }
+}
+
+function toggleMode(register) {
+  isRegisterMode = register;
+  const nameField = document.getElementById('nameField');
+  const btn = document.getElementById('loginBtn');
+  const title = document.getElementById('formTitle');
+
+  if (register) {
+    nameField.classList.remove('hidden');
+    btn.textContent = 'Register';
+    title.textContent = 'Register';
+    document.getElementById('showRegister').classList.add('underline', 'font-semibold', 'text-indigo-600');
+    document.getElementById('showRegister').classList.remove('text-gray-500');
+    document.getElementById('showLogin').classList.remove('underline', 'font-semibold', 'text-indigo-600');
+    document.getElementById('showLogin').classList.add('text-gray-500');
+  } else {
+    nameField.classList.add('hidden');
+    btn.textContent = 'Login';
+    title.textContent = 'Login';
+    document.getElementById('showLogin').classList.add('underline', 'font-semibold', 'text-indigo-600');
+    document.getElementById('showLogin').classList.remove('text-gray-500');
+    document.getElementById('showRegister').classList.remove('underline', 'font-semibold', 'text-indigo-600');
+    document.getElementById('showRegister').classList.add('text-gray-500');
+  }
+  hideMessages();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -135,15 +230,14 @@ document.addEventListener('DOMContentLoaded', () => {
   genCaptcha();
 
   document.getElementById('regenCaptcha').addEventListener('click', genCaptcha);
-
-  document.getElementById('loginBtn').addEventListener('click', () => {
-    loginUser();
-  });
+  document.getElementById('loginBtn').addEventListener('click', handleAuth);
+  document.getElementById('showLogin').addEventListener('click', () => toggleMode(false));
+  document.getElementById('showRegister').addEventListener('click', () => toggleMode(true));
 
   document.addEventListener('keydown', (e) => {
-    if(e.key === 'Enter'){
+    if (e.key === 'Enter') {
       e.preventDefault();
-      loginUser();
+      handleAuth();
     }
   });
 });
