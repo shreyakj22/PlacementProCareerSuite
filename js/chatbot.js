@@ -10,6 +10,7 @@
     const btn = document.createElement('button');
     btn.id = 'placementbot-btn';
     btn.innerText = 'PlacementBot';
+    
     btn.style.position = 'fixed';
     btn.style.right = '16px';
     btn.style.bottom = '16px';

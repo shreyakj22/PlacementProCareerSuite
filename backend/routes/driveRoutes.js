@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-
 const { createDrive, getDrives } = require("../controllers/driveController");
 
 router.post("/create", createDrive);

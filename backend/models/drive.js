@@ -1,14 +1,13 @@
-const db = require("./db");
+const mongoose = require("mongoose");
 
-const Drive = {
-  create: (company, role, date, location, cb) => {
-    const sql = "INSERT INTO drives (company, role, date, location) VALUES (?, ?, ?, ?)";
-    db.query(sql, [company, role, date, location], cb);
+const driveSchema = new mongoose.Schema({
+  company: { type: String, required: true },
+  criteria: {
+    minCgpa: { type: Number, default: 0 },
+    maxBacklogs: { type: Number, default: 0 },
+    branches: [String]
   },
+  createdAt: { type: Date, default: Date.now }
+});
 
-  getAll: (cb) => {
-    db.query("SELECT * FROM drives", cb);
-  }
-};
-
-module.exports = Drive;
+module.exports = mongoose.model("Drive", driveSchema);

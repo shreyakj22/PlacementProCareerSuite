@@ -1,57 +1,62 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const User = require("../models/User");
+const User = require("../models/user");
+
+const JWT_SECRET = process.env.JWT_SECRET || "very_long_secret_key_change_me";
 
 // REGISTER
-exports.registerUser = (req, res) => {
-  const { name, email, password, role } = req.body;
+exports.registerUser = async (req, res) => {
+  try {
+    const { name, email, password, role } = req.body;
 
-  if (!name || !email || !password) {
-    return res.status(400).json({ message: "All fields required" });
-  }
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: "All fields required" });
+    }
 
-  // Check if user already exists
-  User.findByEmail(email, async (err, result) => {
-    if (result.length > 0) {
+    const existing = await User.findOne({ email });
+    if (existing) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user
-    User.create(name, email, hashedPassword, role || "student", (err, data) => {
-      if (err) {
-        return res.status(500).json({ error: err });
-      }
-
-      res.json({ message: "User registered successfully" });
+    const newUser = new User({
+      name,
+      email,
+      password: hashedPassword,
+      role: role || "student"
     });
-  });
+
+    await newUser.save();
+    res.json({ message: "User registered successfully" });
+  } catch (error) {
+    console.error("Register error:", error);
+    res.status(500).json({ error: "Registration failed" });
+  }
 };
 
 // LOGIN
-exports.loginUser = (req, res) => {
-  const { email, password } = req.body;
+exports.loginUser = async (req, res) => {
+  try {
+    const { email, password, role } = req.body;
 
-  User.findByEmail(email, async (err, result) => {
-    if (result.length === 0) {
+    const user = await User.findOne({ email });
+    if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const user = result[0];
+    if (role && user.role !== role) {
+      return res.status(403).json({ message: "Role mismatch. You are registered as: " + user.role });
+    }
 
-    // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
-
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // Generate token
     const token = jwt.sign(
-      { id: user.id, role: user.role },
-      "SECRET_KEY",
+      { id: user._id, role: user.role },
+      JWT_SECRET,
       { expiresIn: "1d" }
     );
 
@@ -59,11 +64,14 @@ exports.loginUser = (req, res) => {
       message: "Login successful",
       token,
       user: {
-        id: user.id,
+        id: user._id,
         name: user.name,
         email: user.email,
         role: user.role
       }
     });
-  });
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({ error: "Login failed" });
+  }
 };

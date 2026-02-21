@@ -1,19 +1,21 @@
-const Drive = require("../models/Drive");
+const Drive = require("../models/drive");
 
-exports.createDrive = (req, res) => {
-  const { company, role, date, location } = req.body;
-
-  Drive.create(company, role, date, location, (err, data) => {
-    if (err) return res.status(500).json(err);
-
-    res.json({ message: "Drive Created" });
-  });
+exports.createDrive = async (req, res) => {
+  try {
+    const { company, criteria } = req.body;
+    const drive = new Drive({ company, criteria });
+    await drive.save();
+    res.json({ message: "Drive created", drive });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to create drive" });
+  }
 };
 
-exports.getDrives = (req, res) => {
-  Drive.getAll((err, data) => {
-    if (err) return res.status(500).json(err);
-
-    res.json(data);
-  });
+exports.getDrives = async (req, res) => {
+  try {
+    const drives = await Drive.find().sort({ createdAt: -1 });
+    res.json(drives);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch drives" });
+  }
 };
