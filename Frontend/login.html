@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Login - PlacementPro</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link rel="stylesheet" href="css/style.css">
+  <title>Login - PlacementPro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="../css/style.css">
 </head>
 
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
@@ -11,40 +11,90 @@
 <div class="bg-white p-8 rounded-xl shadow-lg w-96">
   <h2 class="text-2xl font-bold text-indigo-600 text-center">Login</h2>
 
-  <div id="roleFields" class="mt-4">
-    <!-- role-specific inputs injected here -->
-  </div>
+  <div id="roleFields" class="mt-4"></div>
 
   <div class="mt-4 flex items-center gap-3">
     <div id="captchaBox" class="px-3 py-2 bg-gray-100 rounded font-mono text-lg"></div>
-    <button id="regenCaptcha" class="px-2 py-1 bg-gray-200 rounded">↻</button>
+    <button type="button" id="regenCaptcha" class="px-2 py-1 bg-gray-200 rounded">↻</button>
   </div>
-  <input id="captchaInput" class="w-full p-2 border rounded mt-3" placeholder="Enter captcha shown above">
 
-  <select id="role" class="w-full p-2 border rounded mt-4 hidden">
+  <input id="captchaInput" class="w-full p-2 border rounded mt-3"
+         placeholder="Enter captcha shown above">
+
+  <select id="role" class="hidden">
     <option value="student">Student</option>
     <option value="tpo">TPO</option>
     <option value="alumni">Alumni</option>
   </select>
 
-  <button id="loginBtn" 
-  class="w-full bg-indigo-600 text-white py-2 rounded mt-6">
+  <button id="loginBtn"
+          class="w-full bg-indigo-600 text-white py-2 rounded mt-6">
     Login
   </button>
 </div>
 
-</body>
-
-<script src="js/auth.js"></script>
+<!-- Inline auth (fallback if external file doesn't load) -->
 <script>
-// Inline initializer: render role-specific fields and captcha
+function loginUser() {
+
+  const role = document.getElementById('role').value;
+  const enteredCaptcha = document.getElementById('captchaInput').value;
+
+  // CAPTCHA CHECK
+  if (enteredCaptcha !== window.currentCaptcha) {
+    alert("Invalid Captcha");
+    return;
+  }
+
+  if (role === "student") {
+
+    const email = document.getElementById('stuEmail').value;
+    const username = document.getElementById('stuUsername').value;
+    const password = document.getElementById('stuPassword').value;
+
+    if (email && username && password) {
+      window.location.href = "student.html";
+    } else {
+      alert("Please fill all student fields");
+    }
+
+  }
+
+  else if (role === "tpo") {
+
+    const tpoId = document.getElementById('tpoId').value;
+    const password = document.getElementById('tpoPassword').value;
+
+    if (tpoId && password) {
+      window.location.href = "tpo.html";
+    } else {
+      alert("Please fill TPO details");
+    }
+
+  }
+
+  else if (role === "alumni") {
+
+    const email = document.getElementById('alEmail').value;
+    const password = document.getElementById('alPassword').value;
+
+    if (email && password) {
+      window.location.href = "alumni.html";
+    } else {
+      alert("Please fill alumni details");
+    }
+
+  }
+}
+</script>
+
+<script>
 function getQueryParam(name){
   const url = new URL(window.location.href);
   return url.searchParams.get(name);
 }
 
 function genCaptcha(){
-  // simple 5-digit numeric captcha
   const val = Math.floor(10000 + Math.random()*90000).toString();
   window.currentCaptcha = val;
   document.getElementById('captchaBox').innerText = val;
@@ -53,36 +103,44 @@ function genCaptcha(){
 function renderRoleFields(role){
   const container = document.getElementById('roleFields');
   container.innerHTML = '';
-  if(role==='student'){
+
+  if(role === 'student'){
     container.innerHTML = `
       <input id="stuEmail" class="w-full p-2 border rounded mt-2" placeholder="Email">
       <input id="stuUsername" class="w-full p-2 border rounded mt-2" placeholder="Username">
       <input id="stuPassword" type="password" class="w-full p-2 border rounded mt-2" placeholder="Password">
     `;
-  } else if(role==='tpo'){
+  }
+
+  else if(role === 'tpo'){
     container.innerHTML = `
       <input id="tpoId" class="w-full p-2 border rounded mt-2" placeholder="TPO ID">
       <input id="tpoPassword" type="password" class="w-full p-2 border rounded mt-2" placeholder="Password">
     `;
-  } else if(role==='alumni'){
+  }
+
+  else if(role === 'alumni'){
     container.innerHTML = `
       <input id="alEmail" class="w-full p-2 border rounded mt-2" placeholder="Email">
       <input id="alPassword" type="password" class="w-full p-2 border rounded mt-2" placeholder="Password">
     `;
   }
+
   document.getElementById('role').value = role;
 }
 
-document.addEventListener('DOMContentLoaded', ()=>{
+document.addEventListener('DOMContentLoaded', () => {
   const role = getQueryParam('role') || 'student';
   renderRoleFields(role);
   genCaptcha();
+
   document.getElementById('regenCaptcha').addEventListener('click', genCaptcha);
-  document.getElementById('loginBtn').addEventListener('click', ()=>{
+
+  document.getElementById('loginBtn').addEventListener('click', () => {
     loginUser();
   });
-  // Submit on Enter key anywhere in the page
-  document.addEventListener('keydown', (e)=>{
+
+  document.addEventListener('keydown', (e) => {
     if(e.key === 'Enter'){
       e.preventDefault();
       loginUser();
@@ -90,5 +148,6 @@ document.addEventListener('DOMContentLoaded', ()=>{
   });
 });
 </script>
+
 </body>
 </html>
